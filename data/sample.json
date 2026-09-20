@@ -1,0 +1,9 @@
+{
+  "event_id": "092103-015-sample-001",
+  "event_type": "AUTHORIZATION_UPDATED",
+  "aggregate_type": "child_care_record",
+  "aggregate_id": "childcare_health_handoff-001",
+  "occurred_at": "2026-09-20T16:00:00+08:00",
+  "version": 1,
+  "summary": "医育联动健康接力联调样例"
+}
