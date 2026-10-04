@@ -1,9 +1,21 @@
 {
-  "event_id": "092103-015-sample-001",
-  "event_type": "AUTHORIZATION_UPDATED",
-  "aggregate_type": "child_care_record",
-  "aggregate_id": "childcare_health_handoff-001",
-  "occurred_at": "2026-09-20T16:00:00+08:00",
+  "event_id": "evt-sample-observation-001",
+  "event_type": "OBSERVATION_RECORDED",
+  "aggregate_type": "daily_observation",
+  "aggregate_id": "obs-sample-001",
+  "occurred_at": "2026-10-04T08:40:00+08:00",
   "version": 1,
-  "summary": "医育联动健康接力联调样例"
+  "summary": "最小业务事件样例：当班老师记录一条早餐进食观察",
+  "child_id": "c001",
+  "actor": {
+    "actor_id": "t-wang",
+    "role": "teacher",
+    "org_id": "site-a",
+    "name": "王老师"
+  },
+  "payload": {
+    "category": "feeding",
+    "observed_at": "2026-10-04T08:35:00+08:00",
+    "content": "早餐小米粥与蒸蛋吃完，餐前核对食材无花生。"
+  }
 }

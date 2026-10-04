@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "医育联动健康接力领域事件",
+  "description": "托育综合服务中心医育联动后端的公共事件信封。所有跨角色协作均以追加事件交换，筛查指标只描述现象与待复核标记，不承载自动诊断结论。",
   "type": "object",
   "required": [
     "event_id",
@@ -9,7 +10,10 @@
     "aggregate_id",
     "occurred_at",
     "version",
-    "summary"
+    "summary",
+    "child_id",
+    "actor",
+    "payload"
   ],
   "properties": {
     "event_id": {
@@ -19,10 +23,22 @@
     "event_type": {
       "type": "string",
       "enum": [
+        "CHILD_CARE_RECORD_RECORDED",
+        "AUTHORIZATION_GRANTED",
         "AUTHORIZATION_UPDATED",
+        "AUTHORIZATION_REVOKED",
         "OBSERVATION_RECORDED",
-        "ALERT_RAISED",
+        "HEALTH_SCREENING_RECORDED",
+        "REFERRAL_RECOMMENDED",
+        "REFERRAL_SENT",
+        "REFERRAL_DELIVERED",
         "REFERRAL_ACCEPTED",
+        "MEDICATION_DELEGATION_RECORDED",
+        "INCIDENT_RAISED",
+        "INCIDENT_DISPOSITION_RECORDED",
+        "ALERT_RAISED",
+        "ALERT_ACKNOWLEDGED",
+        "FOLLOWUP_RECORDED",
         "FOLLOWUP_COMPLETED"
       ]
     },
@@ -31,8 +47,13 @@
       "enum": [
         "child_care_record",
         "guardian_authorization",
-        "health_observation",
-        "referral_handoff"
+        "daily_observation",
+        "health_screening",
+        "referral_handoff",
+        "medication_delegation",
+        "incident",
+        "alert",
+        "followup"
       ]
     },
     "aggregate_id": {
@@ -45,12 +66,426 @@
     },
     "version": {
       "type": "integer",
-      "minimum": 1
+      "minimum": 1,
+      "description": "同一聚合内严格递增，事件只追加，不更新、不覆盖。"
     },
     "summary": {
       "type": "string",
       "minLength": 1
+    },
+    "child_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actor": {
+      "type": "object",
+      "required": ["actor_id", "role"],
+      "properties": {
+        "actor_id": { "type": "string", "minLength": 1 },
+        "role": {
+          "type": "string",
+          "enum": [
+            "teacher",
+            "health_administrator",
+            "doctor",
+            "operations",
+            "guardian",
+            "temporary_caregiver"
+          ]
+        },
+        "org_id": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "linked_event_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "回访挂原事件、转诊发送挂建议、处置挂突发事件；被挂事件的现场记录不可被覆盖。"
+    },
+    "payload": {
+      "type": "object"
     }
   },
-  "additionalProperties": true
+  "additionalProperties": false,
+  "$defs": {
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "day": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "event_type": { "const": "CHILD_CARE_RECORD_RECORDED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["child_name", "birth_date", "org_id", "guardian_ids"],
+            "properties": {
+              "child_name": { "$ref": "#/$defs/nonEmptyString" },
+              "birth_date": { "$ref": "#/$defs/day" },
+              "sex": { "type": "string", "enum": ["male", "female", "unknown"] },
+              "org_id": { "$ref": "#/$defs/nonEmptyString" },
+              "class_id": { "type": "string" },
+              "guardian_ids": { "type": "array", "items": { "$ref": "#/$defs/nonEmptyString" }, "minItems": 1 },
+              "allergies": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["allergen"],
+                  "properties": {
+                    "allergen": { "$ref": "#/$defs/nonEmptyString" },
+                    "severity": { "type": "string", "enum": ["mild", "moderate", "severe"] },
+                    "reaction": { "type": "string" },
+                    "source": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "sharing_preferences": {
+                "type": "object",
+                "properties": {
+                  "restricted_categories": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["identity", "daily_care", "allergy", "health_screening", "medical_plan", "incident_emergency", "followup"]
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "enum": ["AUTHORIZATION_GRANTED", "AUTHORIZATION_UPDATED"] } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["subject_id", "subject_role", "scope", "effective_from", "effective_until", "granted_by"],
+            "properties": {
+              "subject_id": { "$ref": "#/$defs/nonEmptyString" },
+              "subject_name": { "type": "string" },
+              "subject_role": { "type": "string", "enum": ["guardian", "temporary_caregiver"] },
+              "relation": { "type": "string" },
+              "scope": {
+                "type": "array",
+                "items": { "type": "string", "enum": ["pickup", "daily_care_view", "emergency_contact", "medical_decision"] },
+                "minItems": 1
+              },
+              "effective_from": { "$ref": "#/$defs/day" },
+              "effective_until": { "$ref": "#/$defs/day" },
+              "granted_by": { "$ref": "#/$defs/nonEmptyString" },
+              "reason": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "AUTHORIZATION_REVOKED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["subject_id", "revoked_by"],
+            "properties": {
+              "subject_id": { "$ref": "#/$defs/nonEmptyString" },
+              "revoked_by": { "$ref": "#/$defs/nonEmptyString" },
+              "reason": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "OBSERVATION_RECORDED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["category", "observed_at", "content"],
+            "properties": {
+              "category": { "type": "string", "enum": ["feeding", "development", "sleep", "stool", "mood", "other"] },
+              "observed_at": { "type": "string", "format": "date-time" },
+              "content": { "$ref": "#/$defs/nonEmptyString" },
+              "measures": { "type": "object" }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "HEALTH_SCREENING_RECORDED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "description": "只记录指标与待复核标记，禁止 diagnosis 等结论字段；系统不会把指标自动变成诊断。",
+            "required": ["screening_type", "observed_at", "indicators"],
+            "properties": {
+              "screening_type": { "type": "string", "enum": ["growth", "vision", "hearing", "development", "nutrition", "other"] },
+              "observed_at": { "type": "string", "format": "date-time" },
+              "indicators": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["code", "label", "value"],
+                  "properties": {
+                    "code": { "$ref": "#/$defs/nonEmptyString" },
+                    "label": { "$ref": "#/$defs/nonEmptyString" },
+                    "value": { "type": ["number", "string"] },
+                    "unit": { "type": "string" },
+                    "reference": { "type": "string" },
+                    "flag": { "type": "string", "enum": ["normal", "review", "risk"] }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "note": { "type": "string" }
+            },
+            "not": {
+              "anyOf": [
+                { "required": ["diagnosis"] },
+                { "required": ["diagnostic_result"] },
+                { "required": ["confirmed_condition"] }
+              ]
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "REFERRAL_RECOMMENDED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["to_org_id", "reason", "urgency"],
+            "properties": {
+              "to_org_id": { "$ref": "#/$defs/nonEmptyString" },
+              "to_org_name": { "type": "string" },
+              "suggested_department": { "type": "string" },
+              "reason": { "$ref": "#/$defs/nonEmptyString" },
+              "urgency": { "type": "string", "enum": ["routine", "urgent"] },
+              "linked_screening_event_id": { "type": "string" },
+              "note": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "REFERRAL_SENT" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "description": "跨机构转诊只发送白名单最小资料，禁止姓名、证件、联系方式等标识字段。",
+            "required": ["to_org_id", "packet"],
+            "properties": {
+              "to_org_id": { "$ref": "#/$defs/nonEmptyString" },
+              "packet": {
+                "type": "object",
+                "required": ["child_id", "month_age", "reason"],
+                "properties": {
+                  "child_id": { "$ref": "#/$defs/nonEmptyString" },
+                  "month_age": { "type": "number" },
+                  "sex": { "type": "string", "enum": ["male", "female", "unknown"] },
+                  "urgency": { "type": "string", "enum": ["routine", "urgent"] },
+                  "reason": { "$ref": "#/$defs/nonEmptyString" },
+                  "indicator_summary": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["code", "flag"],
+                      "properties": {
+                        "code": { "$ref": "#/$defs/nonEmptyString" },
+                        "flag": { "type": "string", "enum": ["normal", "review", "risk"] }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "allergies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["allergen", "severity"],
+                      "properties": {
+                        "allergen": { "$ref": "#/$defs/nonEmptyString" },
+                        "severity": { "type": "string", "enum": ["mild", "moderate", "severe"] }
+                      },
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": ["linked_event_id"]
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "REFERRAL_DELIVERED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["receiver_org_id", "receiver_actor_id"],
+            "properties": {
+              "receiver_org_id": { "$ref": "#/$defs/nonEmptyString" },
+              "receiver_actor_id": { "$ref": "#/$defs/nonEmptyString" },
+              "received_at": { "type": "string", "format": "date-time" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": ["linked_event_id"]
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "REFERRAL_ACCEPTED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["accepted_by"],
+            "properties": {
+              "accepted_by": { "$ref": "#/$defs/nonEmptyString" },
+              "appointment_at": { "type": "string", "format": "date-time" }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "MEDICATION_DELEGATION_RECORDED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["medication_name", "dose", "schedule", "start_date", "end_date", "instructions", "guardian_consent"],
+            "properties": {
+              "medication_name": { "$ref": "#/$defs/nonEmptyString" },
+              "dose": { "$ref": "#/$defs/nonEmptyString" },
+              "route": { "type": "string" },
+              "schedule": { "type": "array", "items": { "$ref": "#/$defs/nonEmptyString" }, "minItems": 1 },
+              "start_date": { "$ref": "#/$defs/day" },
+              "end_date": { "$ref": "#/$defs/day" },
+              "prescriber": { "type": "string" },
+              "instructions": { "$ref": "#/$defs/nonEmptyString" },
+              "guardian_consent": { "type": "boolean", "const": true }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "INCIDENT_RAISED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["incident_type", "severity", "occurred_at", "description", "on_site_handling"],
+            "properties": {
+              "incident_type": { "type": "string", "enum": ["allergy", "fever", "injury", "other"] },
+              "severity": { "type": "string", "enum": ["low", "medium", "high"] },
+              "occurred_at": { "type": "string", "format": "date-time" },
+              "location": { "type": "string" },
+              "description": { "$ref": "#/$defs/nonEmptyString" },
+              "on_site_handling": { "$ref": "#/$defs/nonEmptyString" },
+              "notified_guardian": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "INCIDENT_DISPOSITION_RECORDED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["actions", "handled_by", "disposition_at"],
+            "properties": {
+              "actions": { "$ref": "#/$defs/nonEmptyString" },
+              "handled_by": { "$ref": "#/$defs/nonEmptyString" },
+              "disposition_at": { "type": "string", "format": "date-time" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": ["linked_event_id"]
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "ALERT_RAISED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["alert_kind", "severity", "message"],
+            "properties": {
+              "alert_kind": { "type": "string", "enum": ["allergy", "emergency"] },
+              "severity": { "type": "string", "enum": ["medium", "high"] },
+              "message": { "$ref": "#/$defs/nonEmptyString" }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "ALERT_ACKNOWLEDGED" } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["acknowledged_by"],
+            "properties": {
+              "acknowledged_by": { "$ref": "#/$defs/nonEmptyString" },
+              "acknowledged_at": { "type": "string", "format": "date-time" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": ["linked_event_id"]
+      }
+    },
+    {
+      "if": { "properties": { "event_type": { "enum": ["FOLLOWUP_RECORDED", "FOLLOWUP_COMPLETED"] } } },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["result", "recorded_by_role", "followed_up_at"],
+            "properties": {
+              "result": { "$ref": "#/$defs/nonEmptyString" },
+              "outcome": { "type": "string", "enum": ["completed", "ongoing", "needs_followup"] },
+              "recorded_by_role": { "type": "string", "enum": ["doctor", "health_administrator"] },
+              "followed_up_at": { "type": "string", "format": "date-time" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": ["linked_event_id"]
+      }
+    }
+  ]
 }

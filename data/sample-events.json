@@ -1,0 +1,313 @@
+[
+  {
+    "event_id": "evt-record-c001-v1",
+    "event_type": "CHILD_CARE_RECORD_RECORDED",
+    "aggregate_type": "child_care_record",
+    "aggregate_id": "c001",
+    "occurred_at": "2026-09-01T09:00:00+08:00",
+    "version": 1,
+    "summary": "建立朵朵（儿童 c001）照护档案与花生严重过敏史",
+    "child_id": "c001",
+    "actor": { "actor_id": "ha-li", "role": "health_administrator", "org_id": "site-a", "name": "李健康管理员" },
+    "payload": {
+      "child_name": "朵朵",
+      "birth_date": "2024-03-12",
+      "sex": "female",
+      "org_id": "site-a",
+      "class_id": "xiaoban-1",
+      "guardian_ids": ["g-mom"],
+      "allergies": [
+        { "allergen": "花生", "severity": "severe", "reaction": "接触后口唇红肿、皮疹", "source": "监护人陈述+妇幼保健院既往记录" },
+        { "allergen": "芒果", "severity": "mild", "reaction": "口周轻微发红", "source": "监护人陈述" }
+      ],
+      "sharing_preferences": { "restricted_categories": ["health_screening", "medical_plan"] }
+    }
+  },
+  {
+    "event_id": "evt-auth-grandma-v1",
+    "event_type": "AUTHORIZATION_GRANTED",
+    "aggregate_type": "guardian_authorization",
+    "aggregate_id": "auth-c001-grandma",
+    "occurred_at": "2026-09-30T20:10:00+08:00",
+    "version": 1,
+    "summary": "监护人授权外婆国庆期间临时接送并查看日常照护，有效期至 10 月 10 日",
+    "child_id": "c001",
+    "actor": { "actor_id": "g-mom", "role": "guardian", "name": "朵朵妈妈" },
+    "payload": {
+      "subject_id": "t-grandma",
+      "subject_name": "朵朵外婆",
+      "subject_role": "temporary_caregiver",
+      "relation": "外祖母",
+      "scope": ["pickup", "daily_care_view", "emergency_contact"],
+      "effective_from": "2026-10-01",
+      "effective_until": "2026-10-10",
+      "granted_by": "g-mom",
+      "reason": "国庆期间父母出差，由外婆临时照护"
+    }
+  },
+  {
+    "event_id": "evt-obs-feeding-1004",
+    "event_type": "OBSERVATION_RECORDED",
+    "aggregate_type": "daily_observation",
+    "aggregate_id": "obs-c001-20261004",
+    "occurred_at": "2026-10-04T08:40:00+08:00",
+    "version": 1,
+    "summary": "早餐进食观察：粥与蒸蛋吃完，未接触含花生食物",
+    "child_id": "c001",
+    "actor": { "actor_id": "t-wang", "role": "teacher", "org_id": "site-a", "name": "王老师" },
+    "payload": {
+      "category": "feeding",
+      "observed_at": "2026-10-04T08:35:00+08:00",
+      "content": "早餐小米粥约 150ml、蒸蛋一份全部吃完；餐前核对食材不含花生及坚果。",
+      "measures": { "粥_ml": 150 }
+    }
+  },
+  {
+    "event_id": "evt-obs-dev-1004",
+    "event_type": "OBSERVATION_RECORDED",
+    "aggregate_type": "daily_observation",
+    "aggregate_id": "obs-c001-20261004",
+    "occurred_at": "2026-10-04T10:05:00+08:00",
+    "version": 2,
+    "summary": "发育观察：可双脚并拢跳跃，能说 4-5 字短句",
+    "child_id": "c001",
+    "actor": { "actor_id": "t-wang", "role": "teacher", "org_id": "site-a", "name": "王老师" },
+    "payload": {
+      "category": "development",
+      "observed_at": "2026-10-04T10:00:00+08:00",
+      "content": "户外游戏中可双脚并拢连续跳跃；语言表达能说 4-5 字短句，回应准确。"
+    }
+  },
+  {
+    "event_id": "evt-screening-growth-0925",
+    "event_type": "HEALTH_SCREENING_RECORDED",
+    "aggregate_type": "health_screening",
+    "aggregate_id": "scr-c001-growth-20260925",
+    "occurred_at": "2026-09-25T10:00:00+08:00",
+    "version": 1,
+    "summary": "健康管理员协助完成生长筛查登记：体重/身长指标待复核（仅指标，不作诊断）",
+    "child_id": "c001",
+    "actor": { "actor_id": "ha-li", "role": "health_administrator", "org_id": "site-a", "name": "李健康管理员" },
+    "payload": {
+      "screening_type": "growth",
+      "observed_at": "2026-09-25T09:40:00+08:00",
+      "indicators": [
+        { "code": "WAZ", "label": "年龄别体重Z分", "value": -2.1, "reference": "-2 ~ +2", "flag": "review" },
+        { "code": "HAZ", "label": "年龄别身长Z分", "value": -0.8, "reference": "-2 ~ +2", "flag": "normal" },
+        { "code": "WHZ", "label": "身长别体重Z分", "value": -1.7, "reference": "-2 ~ +2", "flag": "normal" }
+      ],
+      "note": "近两个月体重增长偏缓，建议妇幼医生结合喂养情况复核。"
+    }
+  },
+  {
+    "event_id": "evt-referral-rec-0925",
+    "event_type": "REFERRAL_RECOMMENDED",
+    "aggregate_type": "referral_handoff",
+    "aggregate_id": "ref-c001-nutrition-001",
+    "occurred_at": "2026-09-25T15:20:00+08:00",
+    "version": 1,
+    "summary": "妇幼医生建议转儿童营养门诊评估体重增长，未下诊断结论",
+    "child_id": "c001",
+    "actor": { "actor_id": "dr-chen", "role": "doctor", "org_id": "mch-001", "name": "陈医生" },
+    "payload": {
+      "to_org_id": "mch-001",
+      "to_org_name": "区妇幼保健院",
+      "suggested_department": "儿童营养门诊",
+      "reason": "生长筛查 WAZ=-2.1 待复核，结合喂养史评估体重增长偏缓原因",
+      "urgency": "routine",
+      "linked_screening_event_id": "evt-screening-growth-0925",
+      "note": "请家长预约，携带日常进食记录。"
+    }
+  },
+  {
+    "event_id": "evt-referral-sent-0926",
+    "event_type": "REFERRAL_SENT",
+    "aggregate_type": "referral_handoff",
+    "aggregate_id": "ref-c001-nutrition-001",
+    "occurred_at": "2026-09-26T09:30:00+08:00",
+    "version": 2,
+    "summary": "向妇幼保健院发送转诊最小资料包（不含姓名、证件、联系方式）",
+    "child_id": "c001",
+    "actor": { "actor_id": "dr-chen", "role": "doctor", "org_id": "mch-001", "name": "陈医生" },
+    "linked_event_id": "evt-referral-rec-0925",
+    "payload": {
+      "to_org_id": "mch-001",
+      "packet": {
+        "child_id": "c001",
+        "month_age": 30,
+        "sex": "female",
+        "urgency": "routine",
+        "reason": "WAZ=-2.1 待复核，评估体重增长偏缓原因",
+        "indicator_summary": [
+          { "code": "WAZ", "flag": "review" },
+          { "code": "HAZ", "flag": "normal" },
+          { "code": "WHZ", "flag": "normal" }
+        ],
+        "allergies": [
+          { "allergen": "花生", "severity": "severe" },
+          { "allergen": "芒果", "severity": "mild" }
+        ]
+      }
+    }
+  },
+  {
+    "event_id": "evt-referral-delivered-0926",
+    "event_type": "REFERRAL_DELIVERED",
+    "aggregate_type": "referral_handoff",
+    "aggregate_id": "ref-c001-nutrition-001",
+    "occurred_at": "2026-09-26T10:05:00+08:00",
+    "version": 3,
+    "summary": "妇幼保健院营养门诊分诊台确认收到转诊资料",
+    "child_id": "c001",
+    "actor": { "actor_id": "nurse-mch-01", "role": "health_administrator", "org_id": "mch-001", "name": "赵护士" },
+    "linked_event_id": "evt-referral-sent-0926",
+    "payload": {
+      "receiver_org_id": "mch-001",
+      "receiver_actor_id": "nurse-mch-01",
+      "received_at": "2026-09-26T10:02:00+08:00"
+    }
+  },
+  {
+    "event_id": "evt-referral-accepted-0926",
+    "event_type": "REFERRAL_ACCEPTED",
+    "aggregate_type": "referral_handoff",
+    "aggregate_id": "ref-c001-nutrition-001",
+    "occurred_at": "2026-09-26T10:20:00+08:00",
+    "version": 4,
+    "summary": "妇幼医生接诊并预约 9 月 29 日营养门诊",
+    "child_id": "c001",
+    "actor": { "actor_id": "dr-li", "role": "doctor", "org_id": "mch-001", "name": "李医生" },
+    "linked_event_id": "evt-referral-delivered-0926",
+    "payload": {
+      "accepted_by": "dr-li",
+      "appointment_at": "2026-09-29T09:00:00+08:00"
+    }
+  },
+  {
+    "event_id": "evt-followup-referral-1002",
+    "event_type": "FOLLOWUP_COMPLETED",
+    "aggregate_type": "followup",
+    "aggregate_id": "fu-c001-nutrition-001",
+    "occurred_at": "2026-10-02T16:00:00+08:00",
+    "version": 1,
+    "summary": "营养门诊回访完成：喂养指导已接收，转诊建议闭环",
+    "child_id": "c001",
+    "actor": { "actor_id": "dr-li", "role": "doctor", "org_id": "mch-001", "name": "李医生" },
+    "linked_event_id": "evt-referral-rec-0925",
+    "payload": {
+      "result": "已到院评估，给予膳食结构与加餐指导，建议一个月后复测体重；家长已知悉。",
+      "outcome": "completed",
+      "recorded_by_role": "doctor",
+      "followed_up_at": "2026-10-02T15:30:00+08:00"
+    }
+  },
+  {
+    "event_id": "evt-medication-1004",
+    "event_type": "MEDICATION_DELEGATION_RECORDED",
+    "aggregate_type": "medication_delegation",
+    "aggregate_id": "med-c001-20261004",
+    "occurred_at": "2026-10-04T08:05:00+08:00",
+    "version": 1,
+    "summary": "监护人委托午间服用西替利嗪滴剂并明确同意",
+    "child_id": "c001",
+    "actor": { "actor_id": "g-mom", "role": "guardian", "name": "朵朵妈妈" },
+    "payload": {
+      "medication_name": "盐酸西替利嗪滴剂",
+      "dose": "5 滴",
+      "route": "口服",
+      "schedule": ["12:30"],
+      "start_date": "2026-10-04",
+      "end_date": "2026-10-11",
+      "prescriber": "区妇幼保健院皮肤科",
+      "instructions": "午餐后服用，服药后观察有无嗜睡；如出现呼吸异常立即联系监护人并就医。",
+      "guardian_consent": true
+    }
+  },
+  {
+    "event_id": "evt-incident-allergy-1004",
+    "event_type": "INCIDENT_RAISED",
+    "aggregate_type": "incident",
+    "aggregate_id": "inc-c001-20261004",
+    "occurred_at": "2026-10-04T11:40:00+08:00",
+    "version": 1,
+    "summary": "午餐后疑似花生接触过敏，现场处置并通知监护人",
+    "child_id": "c001",
+    "actor": { "actor_id": "t-wang", "role": "teacher", "org_id": "site-a", "name": "王老师" },
+    "payload": {
+      "incident_type": "allergy",
+      "severity": "high",
+      "occurred_at": "2026-10-04T11:35:00+08:00",
+      "location": "小班一餐厅",
+      "description": "食用外购糕点后口周发红、抓挠颈部，配料表提示同生产线含花生。",
+      "on_site_handling": "立即停止进食，用清水冲洗口周与手部，移除可疑食物并保留包装；健康管理员到场评估，11:38 电话通知监护人。",
+      "notified_guardian": true
+    }
+  },
+  {
+    "event_id": "evt-alert-allergy-1004",
+    "event_type": "ALERT_RAISED",
+    "aggregate_type": "alert",
+    "aggregate_id": "alert-c001-20261004",
+    "occurred_at": "2026-10-04T11:41:00+08:00",
+    "version": 1,
+    "summary": "花生严重过敏告警：越过普通共享偏好通知当班与医疗团队",
+    "child_id": "c001",
+    "actor": { "actor_id": "ha-li", "role": "health_administrator", "org_id": "site-a", "name": "李健康管理员" },
+    "payload": {
+      "alert_kind": "allergy",
+      "severity": "high",
+      "message": "朵朵疑似花生接触过敏，已现场处置，请当班老师避开含花生食物并持续观察呼吸情况。"
+    }
+  },
+  {
+    "event_id": "evt-alert-ack-1004",
+    "event_type": "ALERT_ACKNOWLEDGED",
+    "aggregate_type": "alert",
+    "aggregate_id": "alert-c001-20261004",
+    "occurred_at": "2026-10-04T11:46:00+08:00",
+    "version": 2,
+    "summary": "王老师确认知悉过敏告警并接手观察",
+    "child_id": "c001",
+    "actor": { "actor_id": "t-wang", "role": "teacher", "org_id": "site-a", "name": "王老师" },
+    "linked_event_id": "evt-alert-allergy-1004",
+    "payload": {
+      "acknowledged_by": "t-wang",
+      "acknowledged_at": "2026-10-04T11:46:00+08:00"
+    }
+  },
+  {
+    "event_id": "evt-incident-disposition-1004",
+    "event_type": "INCIDENT_DISPOSITION_RECORDED",
+    "aggregate_type": "incident",
+    "aggregate_id": "inc-c001-20261004",
+    "occurred_at": "2026-10-04T12:10:00+08:00",
+    "version": 2,
+    "summary": "驻点妇幼医生补充应急处置：观察 30 分钟症状缓解（附着原事件，不改写现场记录）",
+    "child_id": "c001",
+    "actor": { "actor_id": "dr-chen", "role": "doctor", "org_id": "mch-001", "name": "陈医生" },
+    "linked_event_id": "evt-incident-allergy-1004",
+    "payload": {
+      "actions": "远程指导继续观察呼吸与皮疹范围；30 分钟后口周红肿消退、无呼吸异常，嘱避免热水擦洗，若反复即刻就诊。",
+      "handled_by": "dr-chen",
+      "disposition_at": "2026-10-04T12:05:00+08:00"
+    }
+  },
+  {
+    "event_id": "evt-followup-incident-1015",
+    "event_type": "FOLLOWUP_RECORDED",
+    "aggregate_type": "followup",
+    "aggregate_id": "fu-c001-incident-20261004",
+    "occurred_at": "2026-10-15T10:00:00+08:00",
+    "version": 1,
+    "summary": "迟到回访（事件后第 11 天）：电话确认未复发；附着突发事件，现场记录保持不变",
+    "child_id": "c001",
+    "actor": { "actor_id": "ha-li", "role": "health_administrator", "org_id": "site-a", "name": "李健康管理员" },
+    "linked_event_id": "evt-incident-allergy-1004",
+    "payload": {
+      "result": "电话回访监护人：近十天未再出现皮疹或呼吸异常，已清理家中含花生糕点；托育点已将该品牌供应商撤出点心采购。",
+      "outcome": "completed",
+      "recorded_by_role": "health_administrator",
+      "followed_up_at": "2026-10-15T09:50:00+08:00"
+    }
+  }
+]

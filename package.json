@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "领域事件基础校验",
+  "description": "医育联动健康接力后端：领域事件、最小可见访问控制与转诊回访闭环",
   "scripts": {
+    "start": "node src/index.js",
     "test": "node --test"
   }
 }
